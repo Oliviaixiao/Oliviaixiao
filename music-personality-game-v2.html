@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐人格探索游戏 - 升级版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #000;
+        }
+        
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #blocker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        #instructions {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(123, 31, 162, 0.9), rgba(26, 35, 126, 0.9));
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(156, 39, 176, 0.6);
+            max-width: 500px;
+        }
+        
+        #instructions h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px rgba(187, 222, 251, 0.5);
+        }
+        
+        #instructions p {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #e1bee7;
+        }
+        
+        #start-btn {
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.8), rgba(123, 31, 162, 0.8));
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(123, 31, 162, 0.4);
+        }
+        
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(156, 39, 176, 0.6);
+        }
+        
+        #question-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 35, 126, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+        }
+        
+        #question-content {
+            background: linear-gradient(135deg, rgba(123, 31, 162, 0.95), rgba(26, 35, 126, 0.95));
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(156, 39, 176, 0.7);
+            text-align: center;
+            width: 85%;
+            max-width: 650px;
+            border: 1px solid rgba(187, 222, 251, 0.4);
+        }
+        
+        #question-content h2 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 30px;
+            font-weight: 500;
+            text-shadow: 0 0 15px rgba(187, 222, 251, 0.5);
+            line-height: 1.5;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .option-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .option-btn {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.85), rgba(123, 31, 162, 0.85));
+            color: white;
+            border: none;
+            padding: 16px 25px;
+            border-radius: 12px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(123, 31, 162, 0.4);
+        }
+        
+        .option-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(156, 39, 176, 0.6);
+        }
+        
+        .play-btn {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.85), rgba(200, 170, 0, 0.85));
+            color: #333;
+            border: none;
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5);
+        }
+        
+        #result-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 35, 126, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+            backdrop-filter: blur(10px);
+        }
+        
+        #result-content {
+            background: linear-gradient(135deg, rgba(123, 31, 162, 0.95), rgba(26, 35, 126, 0.95));
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 0 60px rgba(156, 39, 176, 0.8);
+            text-align: center;
+            width: 85%;
+            max-width: 650px;
+            border: 1px solid rgba(187, 222, 251, 0.5);
+        }
+        
+        #result-content h1 {
+            font-family: 'Courier New', monospace;
+            font-size: 56px;
+            letter-spacing: 12px;
+            color: #bbdefb;
+            text-shadow: 0 0 30px rgba(187, 222, 251, 0.9);
+            margin-bottom: 10px;
+        }
+        
+        #result-content h2 {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 25px;
+            font-weight: 500;
+            text-shadow: 0 0 20px rgba(156, 39, 176, 0.8);
+        }
+        
+        #result-content p {
+            color: #e1bee7;
+            font-size: 17px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        #restart-btn {
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.9), rgba(123, 31, 162, 0.9));
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 15px;
+            font-size: 17px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(123, 31, 162, 0.5);
+        }
+        
+        #restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(156, 39, 176, 0.7);
+        }
+        
+        #note-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #ffd700;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 20px;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 215, 0, 0.35);
+        }
+        
+        #note-counter svg {
+            width: 24px;
+            height: 24px;
+            fill: #ffd700;
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+        }
+        
+        #flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 400;
+            transition: opacity 0.3s ease;
+        }
+        
+        .flash-active {
+            opacity: 1 !important;
+        }
+        
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        #crosshair::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        #crosshair::after {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    
+    <div id="blocker">
+        <div id="instructions">
+            <h1>🎵 音乐人格探索游戏</h1>
+            <p>在梦幻的悬浮岛屿上探索，与共鸣水晶互动<br>回答关于音乐偏好的问题<br>发现你的专属音乐人格</p>
+            <p><strong>操作说明：</strong><br>
+            WASD - 移动 | Shift - 加速<br>
+            鼠标 - 环顾四周 | R - 重新开始</p>
+            <button id="start-btn">开始探索</button>
+        </div>
+    </div>
+    
+    <div id="question-panel">
+        <div id="question-content">
+            <h2 id="question-text"></h2>
+            <div class="options" id="options-container"></div>
+        </div>
+    </div>
+    
+    <div id="result-panel">
+        <div id="result-content">
+            <h1 id="personality-code"></h1>
+            <h2 id="personality-name"></h2>
+            <p id="personality-desc"></p>
+            <p style="color: #f3e5f5; font-style: italic;">🎵 正在为您播放契合的专属音乐...</p>
+            <button id="restart-btn">重新开始</button>
+        </div>
+    </div>
+    
+    <div id="note-counter">
+        <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        <span id="counter-text">0/6</span>
+    </div>
+    
+    <div id="crosshair"></div>
+    <div id="flash"></div>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        
+        // 游戏状态
+        let scene, camera, renderer, controls, composer;
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false, sprint = false;
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let prevTime = performance.now();
+        
+        // 游戏数据 - 严谨的6个问题（只有涉及音乐风格的问题才需要示例）
+        const questions = [
+            { 
+                text: "当你情绪低落时，你更倾向于听哪种音乐？", 
+                options: [
+                    { text: "积极明亮、节奏轻快的歌", value: "B", needExample: true }, 
+                    { text: "旋律深沉、略带感伤的歌", value: "D", needExample: true }
+                ], 
+                dimension: "mood" 
+            },
+            { 
+                text: "在社交场合分享音乐时，你更愿意推荐哪种类型的歌？", 
+                options: [
+                    { text: "充满正能量、让人想跟着唱的", value: "B", needExample: true }, 
+                    { text: "细腻内敛、适合独自品味的", value: "D", needExample: true }
+                ], 
+                dimension: "mood" 
+            },
+            { 
+                text: "你通常会在什么时候听音乐？", 
+                options: [
+                    { text: "运动、学习、需要打起精神时", value: "H", needExample: false }, 
+                    { text: "睡前、冥想、想要放松时", value: "L", needExample: false }
+                ], 
+                dimension: "energy" 
+            },
+            { 
+                text: "如果一首歌的前奏很长，你的第一反应是？", 
+                options: [
+                    { text: "期待高潮快点到来，喜欢紧凑有力的编排", value: "H", needExample: false }, 
+                    { text: "享受缓慢铺陈，不介意长时间沉浸", value: "L", needExample: false }
+                ], 
+                dimension: "energy" 
+            },
+            { 
+                text: "听一首新歌时，你更喜欢？", 
+                options: [
+                    { text: "清晰的副歌重复，能很快跟着哼唱", value: "O", needExample: false }, 
+                    { text: "出乎意料的结构变化，每次听都有新发现", value: "F", needExample: false }
+                ], 
+                dimension: "structure" 
+            },
+            { 
+                text: "以下两种音色，哪种更让你着迷？", 
+                options: [
+                    { text: "温暖自然的原声乐器（木吉他、钢琴、小提琴）", value: "A", needExample: true }, 
+                    { text: "科幻感十足的电子合成音效", value: "E", needExample: true }
+                ], 
+                dimension: "timbre" 
+            }
+        ];
+        
+        const personalityTypes = [
+            { code: "BHOA", name: "追光领航员", desc: "音乐中的太阳，充满正能量，总能点燃气氛。喜欢明亮、高能量、结构严谨的原声音乐。" },
+            { code: "BHFA", name: "风暴演奏家", desc: "充满激情，喜欢复杂、高难度的音乐挑战。热爱明亮、高能量、自由即兴的原声音乐。" },
+            { code: "BLOA", name: "温暖守护者", desc: "用温和的旋律抚慰心灵，偏好明亮、低能量、结构清晰的原声音乐。" },
+            { code: "BLFA", name: "自由吟游者", desc: "热爱轻松自在的音乐体验，喜欢明亮、低能量、自由即兴的原声音乐。" },
+            { code: "DHOA", name: "静默守望者", desc: "在民谣和钢琴曲的质朴旋律中，听见世界最真实的回响。" },
+            { code: "DHFA", name: "暗夜诗人", desc: "在忧郁的音符中寻找诗歌与远方，享受孤独的美感。" },
+            { code: "DLOA", name: "心灵疗养师", desc: "用低沉的旋律治愈内心，偏好深沉、低能量、结构清晰的原声音乐。" },
+            { code: "DLFA", name: "深邃冥想者", desc: "在缓慢的音乐节奏中寻找内心的平静。" },
+            { code: "BHOE", name: "电子能量源", desc: "充满活力的电子音乐爱好者，喜欢明亮、高能量、结构严谨的电子音乐。" },
+            { code: "BHFE", name: "科技炼丹师", desc: "对实验电子乐情有独钟，享受未来主义的声音景观。" },
+            { code: "BLOE", name: "数字梦想家", desc: "沉浸在轻柔的电子合成器声音中。" },
+            { code: "BLFE", name: "宇宙漫步者", desc: "在太空般的电子音乐中遨游。" },
+            { code: "DHOE", name: "暗物质引擎", desc: "用深沉的电子音乐驱动内心。" },
+            { code: "DHFE", name: "夜曲创作者", desc: "在黑暗中创作独特的电子声音。" },
+            { code: "DLOE", name: "数码疗养师", desc: "用冷静的电子音乐安抚心灵。" },
+            { code: "DLFE", name: "虚空探索者", desc: "在无限的电子音乐空间中寻找自我。" }
+        ];
+        
+        // 游戏变量
+        let diamonds = [];
+        let diamondRings = [];
+        let selectedOptions = [];
+        let completedQuestions = 0;
+        let currentQuestionIndex = -1;
+        let endingPillar = null;
+        let endingParticles = null;
+        let inEndingSequence = false;
+        let audioContext = null;
+        let currentOscillators = [];
+        let fragments = [];
+        let raycaster = new THREE.Raycaster();
+        let pointLights = [];
+        let starParticles = null;
+        
+        // 初始化
+        function init() {
+            // 场景
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x1a237e, 0.015);
+            
+            // 相机
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 5);
+            
+            // 渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            document.getElementById('game-container').appendChild(renderer.domElement);
+            
+            // 控制器
+            controls = new PointerLockControls(camera, document.body);
+            
+            // 后期处理
+            composer = new EffectComposer(renderer);
+            const renderPass = new RenderPass(scene, camera);
+            composer.addPass(renderPass);
+            
+            const bloomPass = new UnrealBloomPass(
+                new THREE.Vector2(window.innerWidth, window.innerHeight),
+                0.4, 0.4, 0.85
+            );
+            composer.addPass(bloomPass);
+            
+            // 创建场景元素
+            createLights();
+            createIsland();
+            createPath();
+            createDiamonds();
+            createStarfield();
+            createEndingPillar();
+            
+            // 事件监听
+            setupEventListeners();
+            
+            // 开始动画
+            animate();
+        }
+        
+        // 创建灯光
+        function createLights() {
+            // 环境光
+            const ambientLight = new THREE.AmbientLight(0x404080, 0.3);
+            scene.add(ambientLight);
+            
+            // 半球光
+            const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x362d59, 0.5);
+            scene.add(hemiLight);
+            
+            // 主方向光
+            const dirLight = new THREE.DirectionalLight(0xffeedd, 0.8);
+            dirLight.position.set(10, 20, 10);
+            scene.add(dirLight);
+            
+            // 彩色点光源
+            const colors = [0xff5555, 0x55ff55, 0x5555ff];
+            const positions = [[-15, 5, -10], [15, 5, -20], [0, 5, -30]];
+            
+            colors.forEach((color, i) => {
+                const light = new THREE.PointLight(color, 0.6, 30);
+                light.position.set(...positions[i]);
+                scene.add(light);
+                pointLights.push({ light, basePos: positions[i], offset: i * 2 });
+            });
+        }
+        
+        // 创建岛屿
+        function createIsland() {
+            // 不规则圆形地面
+            const geometry = new THREE.PlaneGeometry(60, 60, 50, 50);
+            const positions = geometry.attributes.position.array;
+            
+            for (let i = 0; i < positions.length; i += 3) {
+                const x = positions[i];
+                const z = positions[i + 1];
+                const dist = Math.sqrt(x * x + z * z);
+                
+                if (dist < 30) {
+                    positions[i + 2] = Math.random() * 0.3 - 0.15;
+                    if (dist > 25) {
+                        positions[i + 2] -= (dist - 25) * 0.3;
+                    }
+                } else {
+                    positions[i + 2] = -10;
+                }
+            }
+            
+            geometry.computeVertexNormals();
+            
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x3d5c3d,
+                roughness: 0.9,
+                metalness: 0.1,
+                side: THREE.DoubleSide
+            });
+            
+            const island = new THREE.Mesh(geometry, material);
+            island.rotation.x = -Math.PI / 2;
+            scene.add(island);
+            
+            // 边缘发光粒子带
+            const edgeParticles = new THREE.BufferGeometry();
+            const edgeCount = 500;
+            const edgePositions = new Float32Array(edgeCount * 3);
+            
+            for (let i = 0; i < edgeCount; i++) {
+                const angle = (i / edgeCount) * Math.PI * 2;
+                const radius = 28 + Math.random() * 2;
+                edgePositions[i * 3] = Math.cos(angle) * radius;
+                edgePositions[i * 3 + 1] = Math.random() * 2 - 1;
+                edgePositions[i * 3 + 2] = Math.sin(angle) * radius;
+            }
+            
+            edgeParticles.setAttribute('position', new THREE.BufferAttribute(edgePositions, 3));
+            
+            const edgeMaterial = new THREE.PointsMaterial({
+                color: 0x88ccff,
+                size: 0.15,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const edgePoints = new THREE.Points(edgeParticles, edgeMaterial);
+            scene.add(edgePoints);
+        }
+        
+        // 创建路径
+        function createPath() {
+            const pathPoints = [
+                { x: 0, z: 0 },
+                { x: 1.5, z: -8 },
+                { x: -1, z: -16 },
+                { x: 1.2, z: -24 },
+                { x: -0.8, z: -32 },
+                { x: 0.6, z: -40 },
+                { x: 0, z: -48 }
+            ];
+            
+            pathPoints.forEach((point, index) => {
+                const torusGeom = new THREE.TorusGeometry(0.6, 0.08, 8, 32);
+                const torusMat = new THREE.MeshStandardMaterial({
+                    color: 0x88ccff,
+                    transparent: true,
+                    opacity: 0.6,
+                    emissive: 0x4488aa,
+                    emissiveIntensity: 0.5,
+                    metalness: 0.5,
+                    roughness: 0.3
+                });
+                
+                const torus = new THREE.Mesh(torusGeom, torusMat);
+                torus.position.set(point.x, 0.1, point.z);
+                torus.rotation.x = Math.PI / 2;
+                torus.userData = { baseY: 0.1, offset: index * 0.5 };
+                scene.add(torus);
+            });
+        }
+        
+        // 创建钻石
+        function createDiamonds() {
+            const positions = [
+                { x: 0.8, z: -5 },
+                { x: -0.6, z: -12 },
+                { x: 0.5, z: -19 },
+                { x: -0.8, z: -26 },
+                { x: 0.6, z: -33 },
+                { x: -0.5, z: -40 }
+            ];
+            
+            const colors = [0xff5555, 0xff5555, 0xffaa44, 0xaa66ff, 0x44ff88, 0x44ffff];
+            
+            positions.forEach((pos, index) => {
+                const group = new THREE.Group();
+                
+                // 钻石主体（Icosahedron）
+                const diamondGeom = new THREE.IcosahedronGeometry(0.5, 0);
+                const diamondMat = new THREE.MeshStandardMaterial({
+                    color: colors[index],
+                    emissive: colors[index],
+                    emissiveIntensity: 0.6,
+                    metalness: 0.9,
+                    roughness: 0.2,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                
+                const diamond = new THREE.Mesh(diamondGeom, diamondMat);
+                diamond.scale.y = 1.2;
+                diamond.position.y = 1.5;
+                diamond.userData = { index: index, isDiamond: true };
+                group.add(diamond);
+                
+                // 环形粒子光环
+                const ringGeometry = new THREE.BufferGeometry();
+                const ringCount = 50;
+                const ringPositions = new Float32Array(ringCount * 3);
+                
+                for (let i = 0; i < ringCount; i++) {
+                    const angle = (i / ringCount) * Math.PI * 2;
+                    ringPositions[i * 3] = Math.cos(angle) * 0.7;
+                    ringPositions[i * 3 + 1] = 1.5;
+                    ringPositions[i * 3 + 2] = Math.sin(angle) * 0.7;
+                }
+                
+                ringGeometry.setAttribute('position', new THREE.BufferAttribute(ringPositions, 3));
+                
+                const ringMaterial = new THREE.PointsMaterial({
+                    color: colors[index],
+                    size: 0.05,
+                    transparent: true,
+                    opacity: 0.8,
+                    blending: THREE.AdditiveBlending
+                });
+                
+                const ring = new THREE.Points(ringGeometry, ringMaterial);
+                ring.userData = { rotationSpeed: 0.02 };
+                group.add(ring);
+                diamondRings.push(ring);
+                
+                group.position.set(pos.x, 0, pos.z);
+                group.userData = { activated: true, baseScale: 1 };
+                scene.add(group);
+                diamonds.push(group);
+            });
+        }
+        
+        // 创建星空
+        function createStarfield() {
+            const starGeom = new THREE.BufferGeometry();
+            const starCount = 2000;
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+            
+            for (let i = 0; i < starCount; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const radius = 100 + Math.random() * 100;
+                
+                positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i * 3 + 2] = radius * Math.cos(phi);
+                
+                const colorChoice = Math.random();
+                if (colorChoice < 0.6) {
+                    colors[i * 3] = 1;
+                    colors[i * 3 + 1] = 1;
+                    colors[i * 3 + 2] = 1;
+                } else if (colorChoice < 0.8) {
+                    colors[i * 3] = 1;
+                    colors[i * 3 + 1] = 0.9;
+                    colors[i * 3 + 2] = 0.7;
+                } else {
+                    colors[i * 3] = 0.8;
+                    colors[i * 3 + 1] = 0.7;
+                    colors[i * 3 + 2] = 1;
+                }
+            }
+            
+            starGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            
+            const starMat = new THREE.PointsMaterial({
+                size: 0.5,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+            
+            starParticles = new THREE.Points(starGeom, starMat);
+            scene.add(starParticles);
+        }
+        
+        // 创建终点光柱
+        function createEndingPillar() {
+            const pillarGeom = new THREE.CylinderGeometry(1.5, 1.5, 8, 32, 1, true);
+            const pillarMat = new THREE.MeshBasicMaterial({
+                color: 0x6666ff,
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending
+            });
+            
+            endingPillar = new THREE.Mesh(pillarGeom, pillarMat);
+            endingPillar.position.set(0, 4, -48);
+            endingPillar.visible = false;
+            scene.add(endingPillar);
+            
+            // 粒子流
+            const particleGeom = new THREE.BufferGeometry();
+            const particleCount = 100;
+            const particlePositions = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount; i++) {
+                particlePositions[i * 3] = (Math.random() - 0.5) * 2;
+                particlePositions[i * 3 + 1] = Math.random() * 8;
+                particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 2;
+            }
+            
+            particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+            
+            const particleMat = new THREE.PointsMaterial({
+                color: 0xffd700,
+                size: 0.1,
+                transparent: true,
+                opacity: 0,
+                blending: THREE.AdditiveBlending
+            });
+            
+            endingParticles = new THREE.Points(particleGeom, particleMat);
+            endingParticles.position.set(0, 0, -48);
+            endingParticles.visible = false;
+            scene.add(endingParticles);
+        }
+        
+        // 播放示例音色 - 更有旋律感的版本
+        // 播放示例音乐
+        function playExample(type) {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            // 停止之前的所有播放
+            currentOscillators.forEach(osc => {
+                try { osc.stop(); } catch (e) {}
+            });
+            currentOscillators = [];
+            
+            const oscillators = [];
+            const now = audioContext.currentTime;
+            
+            // 根据类型定义不同的旋律
+            if (type === 'B') {
+                // 明亮音乐：欢快的C大调旋律
+                const melody = [523.25, 587.33, 659.25, 698.46, 783.99, 659.25, 523.25, 783.99];
+                const durations = [0.3, 0.3, 0.3, 0.3, 0.4, 0.3, 0.3, 0.5];
+                let time = now;
+                
+                melody.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, time);
+                    
+                    gain.gain.setValueAtTime(0.25, time);
+                    gain.gain.exponentialRampToValueAtTime(0.01, time + durations[i] * 0.9);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc.start(time);
+                    osc.stop(time + durations[i]);
+                    oscillators.push(osc);
+                    
+                    time += durations[i];
+                });
+                
+                // 添加和弦伴奏
+                const chords = [[261.63, 329.63, 392], [293.66, 369.99, 440], [329.63, 415.30, 493.88], [261.63, 329.63, 392]];
+                let chordTime = now;
+                chords.forEach((chord, i) => {
+                    chord.forEach(freq => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, chordTime);
+                        
+                        gain.gain.setValueAtTime(0.08, chordTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, chordTime + 0.8);
+                        
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        
+                        osc.start(chordTime);
+                        osc.stop(chordTime + 0.8);
+                        oscillators.push(osc);
+                    });
+                    chordTime += 0.8;
+                });
+                
+            } else if (type === 'D') {
+                // 深沉音乐：A小调忧郁旋律
+                const melody = [440, 392, 349.23, 329.63, 293.66, 329.63, 349.23, 293.66];
+                const durations = [0.5, 0.4, 0.5, 0.4, 0.6, 0.4, 0.5, 0.7];
+                let time = now;
+                
+                melody.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, time);
+                    
+                    gain.gain.setValueAtTime(0.2, time);
+                    gain.gain.exponentialRampToValueAtTime(0.01, time + durations[i] * 0.9);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc.start(time);
+                    osc.stop(time + durations[i]);
+                    oscillators.push(osc);
+                    
+                    time += durations[i];
+                });
+                
+                // 添加低音伴奏
+                const bass = [220, 196, 174.61, 164.81];
+                let bassTime = now;
+                bass.forEach(freq => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, bassTime);
+                    
+                    gain.gain.setValueAtTime(0.15, bassTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, bassTime + 1.2);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc.start(bassTime);
+                    osc.stop(bassTime + 1.2);
+                    oscillators.push(osc);
+                    
+                    bassTime += 0.8;
+                });
+                
+            } else if (type === 'A') {
+                // 原声乐器：钢琴风格的旋律
+                const melody = [392, 440, 493.88, 523.25, 587.33, 523.25, 493.88, 440];
+                const durations = [0.35, 0.35, 0.35, 0.35, 0.5, 0.35, 0.35, 0.5];
+                let time = now;
+                
+                melody.forEach((freq, i) => {
+                    const harmonics = [1, 2, 3, 4];
+                    harmonics.forEach(h => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq * h, time);
+                        
+                        const volume = 0.2 / h;
+                        gain.gain.setValueAtTime(volume, time);
+                        gain.gain.exponentialRampToValueAtTime(0.001, time + durations[i] * 0.8);
+                        
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        
+                        osc.start(time);
+                        osc.stop(time + durations[i]);
+                        oscillators.push(osc);
+                    });
+                    
+                    time += durations[i];
+                });
+                
+            } else if (type === 'E') {
+                // 电子合成音：未来感的合成器音色
+                const melody = [261.63, 329.63, 392, 523.25, 392, 329.63, 261.63, 392];
+                const durations = [0.25, 0.25, 0.25, 0.4, 0.25, 0.25, 0.25, 0.5];
+                let time = now;
+                
+                melody.forEach((freq, i) => {
+                    const osc1 = audioContext.createOscillator();
+                    const osc2 = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    const filter = audioContext.createBiquadFilter();
+                    
+                    osc1.type = 'sawtooth';
+                    osc1.frequency.setValueAtTime(freq, time);
+                    
+                    osc2.type = 'square';
+                    osc2.frequency.setValueAtTime(freq * 1.005, time);
+                    
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(2000, time);
+                    filter.frequency.exponentialRampToValueAtTime(500, time + durations[i]);
+                    filter.Q.setValueAtTime(5, time);
+                    
+                    gain.gain.setValueAtTime(0.15, time);
+                    gain.gain.exponentialRampToValueAtTime(0.01, time + durations[i] * 0.9);
+                    
+                    osc1.connect(filter);
+                    osc2.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc1.start(time);
+                    osc2.start(time);
+                    osc1.stop(time + durations[i]);
+                    osc2.stop(time + durations[i]);
+                    oscillators.push(osc1, osc2);
+                    
+                    time += durations[i];
+                });
+                
+                // 添加电子鼓点
+                for (let i = 0; i < 8; i++) {
+                    const kickTime = now + i * 0.3;
+                    const kick = audioContext.createOscillator();
+                    const kickGain = audioContext.createGain();
+                    
+                    kick.type = 'sine';
+                    kick.frequency.setValueAtTime(150, kickTime);
+                    kick.frequency.exponentialRampToValueAtTime(50, kickTime + 0.1);
+                    
+                    kickGain.gain.setValueAtTime(0.3, kickTime);
+                    kickGain.gain.exponentialRampToValueAtTime(0.01, kickTime + 0.15);
+                    
+                    kick.connect(kickGain);
+                    kickGain.connect(audioContext.destination);
+                    
+                    kick.start(kickTime);
+                    kick.stop(kickTime + 0.15);
+                    oscillators.push(kick);
+                }
+            }
+            
+            currentOscillators = oscillators;
+        }
+        
+        // 播放拨弦音（保留程序生成的简短音效）
+        function playPlickSound() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800 + Math.random() * 400, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.15);
+        }
+        
+        // 创建碎片动画
+        function createFragments(position) {
+            const fragmentCount = 6;
+            
+            for (let i = 0; i < fragmentCount; i++) {
+                const fragGeom = new THREE.TetrahedronGeometry(0.1);
+                const fragMat = new THREE.MeshStandardMaterial({
+                    color: 0xffd700,
+                    emissive: 0xffd700,
+                    emissiveIntensity: 0.8,
+                    metalness: 0.8,
+                    roughness: 0.2
+                });
+                
+                const fragment = new THREE.Mesh(fragGeom, fragMat);
+                fragment.position.copy(position);
+                fragment.position.y += 1.5;
+                
+                const angle = (i / fragmentCount) * Math.PI * 2;
+                const speed = 0.1 + Math.random() * 0.1;
+                fragment.userData = {
+                    velocity: new THREE.Vector3(
+                        Math.cos(angle) * speed,
+                        0.05 + Math.random() * 0.05,
+                        Math.sin(angle) * speed
+                    ),
+                    phase: 'scatter',
+                    time: 0
+                };
+                
+                scene.add(fragment);
+                fragments.push(fragment);
+            }
+            
+            playPlickSound();
+        }
+        
+        // 更新碎片动画
+        function updateFragments(delta) {
+            const toRemove = [];
+            
+            fragments.forEach((fragment, index) => {
+                fragment.userData.time += delta;
+                
+                if (fragment.userData.phase === 'scatter') {
+                    fragment.position.add(fragment.userData.velocity);
+                    fragment.rotation.x += 0.1;
+                    fragment.rotation.y += 0.1;
+                    
+                    if (fragment.userData.time > 0.3) {
+                        fragment.userData.phase = 'collect';
+                        fragment.userData.time = 0;
+                    }
+                } else if (fragment.userData.phase === 'collect') {
+                    const targetPos = camera.position.clone();
+                    const direction = targetPos.sub(fragment.position).normalize();
+                    fragment.position.add(direction.multiplyScalar(0.15));
+                    fragment.rotation.x += 0.15;
+                    fragment.rotation.y += 0.15;
+                    
+                    const dist = fragment.position.distanceTo(camera.position);
+                    if (dist < 0.5 || fragment.userData.time > 2) {
+                        playPlickSound();
+                        toRemove.push(index);
+                    }
+                }
+            });
+            
+            toRemove.reverse().forEach(index => {
+                scene.remove(fragments[index]);
+                fragments.splice(index, 1);
+            });
+            
+            return fragments.length === 0;
+        }
+        
+        // 显示问题
+        function showQuestion(index) {
+            currentQuestionIndex = index;
+            const question = questions[index];
+            
+            document.getElementById('question-text').textContent = question.text;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, optIndex) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'option-wrapper';
+                
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option.text;
+                btn.onclick = () => selectOption(optIndex);
+                
+                wrapper.appendChild(btn);
+                
+                // 只有需要示例的选项才显示试听按钮
+                if (option.needExample) {
+                    const playBtn = document.createElement('button');
+                    playBtn.className = 'play-btn';
+                    playBtn.textContent = '🔊';
+                    playBtn.onclick = () => playExample(option.value);
+                    wrapper.appendChild(playBtn);
+                }
+                
+                optionsContainer.appendChild(wrapper);
+            });
+            
+            document.getElementById('question-panel').style.display = 'flex';
+            controls.unlock();
+        }
+        
+        // 选择选项
+        function selectOption(optionIndex) {
+            const question = questions[currentQuestionIndex];
+            const option = question.options[optionIndex];
+            
+            selectedOptions.push({
+                dimension: question.dimension,
+                value: option.value
+            });
+            
+            completedQuestions++;
+            document.getElementById('counter-text').textContent = `${completedQuestions}/6`;
+            
+            // 创建碎片动画
+            const diamond = diamonds[currentQuestionIndex];
+            if (diamond) {
+                createFragments(diamond.position);
+                diamond.userData.activated = false;
+                diamond.visible = false;
+            }
+            
+            document.getElementById('question-panel').style.display = 'none';
+            
+            if (completedQuestions === questions.length) {
+                activateEnding();
+            }
+            
+            controls.lock();
+        }
+        
+        // 激活终点
+        function activateEnding() {
+            endingPillar.visible = true;
+            endingParticles.visible = true;
+            endingPillar.material.color.setHex(0xffd700);
+            endingParticles.material.opacity = 0.8;
+        }
+        
+        // 计算人格
+        function calculatePersonality() {
+            const scores = { mood: '', energy: '', structure: '', timbre: '' };
+            
+            const moodScores = selectedOptions.filter(o => o.dimension === 'mood');
+            const energyScores = selectedOptions.filter(o => o.dimension === 'energy');
+            const structureScores = selectedOptions.filter(o => o.dimension === 'structure');
+            const timbreScores = selectedOptions.filter(o => o.dimension === 'timbre');
+            
+            scores.mood = moodScores.filter(o => o.value === 'B').length > moodScores.length / 2 ? 'B' : 'D';
+            scores.energy = energyScores.filter(o => o.value === 'H').length > energyScores.length / 2 ? 'H' : 'L';
+            scores.structure = structureScores.filter(o => o.value === 'O').length > 0 ? 'O' : 'F';
+            scores.timbre = timbreScores.filter(o => o.value === 'A').length > 0 ? 'A' : 'E';
+            
+            const code = scores.mood + scores.energy + scores.structure + scores.timbre;
+            
+            return personalityTypes.find(p => p.code === code) || personalityTypes[0];
+        }
+        
+        // 显示结果
+        function showResult() {
+            const result = calculatePersonality();
+            
+            document.getElementById('personality-code').textContent = result.code;
+            document.getElementById('personality-name').textContent = result.name;
+            document.getElementById('personality-desc').textContent = result.desc;
+            document.getElementById('result-panel').style.display = 'flex';
+            
+            playPersonalityMusic(result.code);
+        }
+        
+        // 播放人格音乐
+        function playPersonalityMusic(code) {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            const mood = code[0];
+            const energy = code[1];
+            const timbre = code[3];
+            
+            const baseNote = mood === 'B' ? 293.66 : 261.63;
+            const oscillatorType = timbre === 'A' ? 'sine' : 'sawtooth';
+            
+            // 播放更长的旋律序列
+            const melody = [
+                baseNote, baseNote * 1.125, baseNote * 1.25, baseNote * 1.125,
+                baseNote, baseNote * 1.333, baseNote * 1.25, baseNote,
+                baseNote * 1.125, baseNote * 1.25, baseNote * 1.333, baseNote * 1.25,
+                baseNote * 1.125, baseNote, baseNote * 1.125, baseNote
+            ];
+            
+            const oscillators = [];
+            const now = audioContext.currentTime;
+            
+            melody.forEach((note, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.type = oscillatorType;
+                osc.frequency.setValueAtTime(note, now + i * 0.5);
+                
+                gain.gain.setValueAtTime(0.15, now + i * 0.5);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.5 + 0.4);
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.start(now + i * 0.5);
+                osc.stop(now + i * 0.5 + 0.45);
+                oscillators.push(osc);
+            });
+            
+            // 添加伴奏和弦
+            const chords = [
+                [baseNote * 0.5, baseNote * 0.625, baseNote * 0.75],
+                [baseNote * 0.5, baseNote * 0.667, baseNote * 0.833],
+                [baseNote * 0.5, baseNote * 0.625, baseNote * 0.75],
+                [baseNote * 0.5, baseNote * 0.667, baseNote * 0.833]
+            ];
+            
+            chords.forEach((chord, i) => {
+                chord.forEach(freq => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + i * 2);
+                    
+                    gain.gain.setValueAtTime(0.08, now + i * 2);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 2 + 1.5);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc.start(now + i * 2);
+                    osc.stop(now + i * 2 + 1.5);
+                    oscillators.push(osc);
+                });
+            });
+        }
+        
+        // 重置游戏
+        function resetGame() {
+            selectedOptions = [];
+            completedQuestions = 0;
+            currentQuestionIndex = -1;
+            inEndingSequence = false;
+            
+            // 清理碎片
+            fragments.forEach(f => scene.remove(f));
+            fragments = [];
+            
+            document.getElementById('counter-text').textContent = '0/6';
+            document.getElementById('result-panel').style.display = 'none';
+            
+            // 重置钻石
+            diamonds.forEach((diamond, index) => {
+                diamond.userData.activated = true;
+                diamond.visible = true;
+                diamond.scale.set(1, 1, 1);
+            });
+            
+            // 隐藏终点
+            endingPillar.visible = false;
+            endingParticles.visible = false;
+            
+            // 重置玩家位置
+            camera.position.set(0, 1.6, 5);
+            
+            controls.lock();
+        }
+        
+        // 设置事件监听
+        function setupEventListeners() {
+            // 开始按钮
+            document.getElementById('start-btn').addEventListener('click', () => {
+                controls.lock();
+            });
+            
+            // 控制器锁定/解锁
+            controls.addEventListener('lock', () => {
+                document.getElementById('blocker').style.display = 'none';
+            });
+            
+            controls.addEventListener('unlock', () => {
+                if (!document.getElementById('question-panel').style.display.includes('flex') &&
+                    !document.getElementById('result-panel').style.display.includes('flex')) {
+                    document.getElementById('blocker').style.display = 'flex';
+                }
+            });
+            
+            // 键盘控制
+            document.addEventListener('keydown', (event) => {
+                switch (event.code) {
+                    case 'KeyW': moveForward = true; break;
+                    case 'KeyS': moveBackward = true; break;
+                    case 'KeyA': moveLeft = true; break;
+                    case 'KeyD': moveRight = true; break;
+                    case 'ShiftLeft': sprint = true; break;
+                    case 'KeyR': resetGame(); break;
+                }
+            });
+            
+            document.addEventListener('keyup', (event) => {
+                switch (event.code) {
+                    case 'KeyW': moveForward = false; break;
+                    case 'KeyS': moveBackward = false; break;
+                    case 'KeyA': moveLeft = false; break;
+                    case 'KeyD': moveRight = false; break;
+                    case 'ShiftLeft': sprint = false; break;
+                }
+            });
+            
+            // 鼠标点击
+            document.addEventListener('click', () => {
+                if (!controls.isLocked) return;
+                
+                raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+                
+                const diamondMeshes = [];
+                diamonds.forEach(group => {
+                    if (group.userData.activated) {
+                        group.traverse(child => {
+                            if (child.userData.isDiamond) {
+                                diamondMeshes.push(child);
+                            }
+                        });
+                    }
+                });
+                
+                const intersects = raycaster.intersectObjects(diamondMeshes);
+                
+                if (intersects.length > 0) {
+                    const diamond = intersects[0].object;
+                    const index = diamond.userData.index;
+                    if (index !== undefined && diamonds[index].userData.activated) {
+                        showQuestion(index);
+                    }
+                }
+            });
+            
+            // 重置按钮
+            document.getElementById('restart-btn').addEventListener('click', resetGame);
+            
+            // 窗口大小调整
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                composer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = performance.now();
+            const delta = (time - prevTime) / 1000;
+            
+            // 移动控制
+            if (controls.isLocked) {
+                velocity.x -= velocity.x * 10.0 * delta;
+                velocity.z -= velocity.z * 10.0 * delta;
+                
+                direction.z = Number(moveForward) - Number(moveBackward);
+                direction.x = Number(moveRight) - Number(moveLeft);
+                direction.normalize();
+                
+                const speed = sprint ? 80.0 : 40.0;
+                
+                if (moveForward || moveBackward) velocity.z -= direction.z * speed * delta;
+                if (moveLeft || moveRight) velocity.x -= direction.x * speed * delta;
+                
+                controls.moveRight(-velocity.x * delta);
+                controls.moveForward(-velocity.z * delta);
+                
+                // 限制移动范围
+                const pos = camera.position;
+                pos.x = Math.max(-25, Math.min(25, pos.x));
+                pos.z = Math.max(-55, Math.min(10, pos.z));
+            }
+            
+            // 更新碎片
+            updateFragments(delta);
+            
+            // 钻石动画
+            diamonds.forEach((diamond, index) => {
+                if (diamond.userData.activated) {
+                    // 上下浮动
+                    diamond.position.y = Math.sin(time * 0.002 + index) * 0.15;
+                    
+                    // 光环旋转
+                    if (diamondRings[index]) {
+                        diamondRings[index].rotation.y += diamondRings[index].userData.rotationSpeed;
+                    }
+                    
+                    // 靠近检测
+                    const dist = camera.position.distanceTo(diamond.position);
+                    const diamondMesh = diamond.children[0];
+                    
+                    if (dist < 3) {
+                        const targetScale = dist < 2 ? 1.3 : 1;
+                        const targetIntensity = dist < 2 ? 1.2 : 0.6;
+                        const targetSpeed = dist < 2 ? 0.04 : 0.02;
+                        
+                        diamond.scale.x += (targetScale - diamond.scale.x) * 0.1;
+                        diamond.scale.y += (targetScale - diamond.scale.y) * 0.1;
+                        diamond.scale.z += (targetScale - diamond.scale.z) * 0.1;
+                        
+                        if (diamondMesh.material) {
+                            diamondMesh.material.emissiveIntensity += (targetIntensity - diamondMesh.material.emissiveIntensity) * 0.1;
+                        }
+                        
+                        if (diamondRings[index]) {
+                            diamondRings[index].userData.rotationSpeed = targetSpeed;
+                        }
+                    }
+                }
+            });
+            
+            // 点光源移动
+            pointLights.forEach(item => {
+                const t = time * 0.0005 + item.offset;
+                item.light.position.x = item.basePos[0] + Math.sin(t) * 5;
+                item.light.position.z = item.basePos[2] + Math.cos(t) * 5;
+            });
+            
+            // 星空旋转
+            if (starParticles) {
+                starParticles.rotation.y += 0.0001;
+            }
+            
+            // 终点光柱动画
+            if (endingPillar && endingPillar.visible) {
+                endingPillar.rotation.y += 0.01;
+                
+                if (endingParticles && endingParticles.visible) {
+                    const positions = endingParticles.geometry.attributes.position.array;
+                    for (let i = 0; i < positions.length; i += 3) {
+                        positions[i + 1] += 0.05;
+                        if (positions[i + 1] > 8) {
+                            positions[i + 1] = 0;
+                        }
+                    }
+                    endingParticles.geometry.attributes.position.needsUpdate = true;
+                }
+                
+                // 检查玩家是否到达终点
+                if (!inEndingSequence && completedQuestions === questions.length) {
+                    const dist = camera.position.distanceTo(endingPillar.position);
+                    if (dist < 3) {
+                        inEndingSequence = true;
+                        
+                        const flash = document.getElementById('flash');
+                        flash.classList.add('flash-active');
+                        setTimeout(() => {
+                            flash.classList.remove('flash-active');
+                            showResult();
+                        }, 300);
+                    }
+                }
+            }
+            
+            prevTime = time;
+            
+            composer.render();
+        }
+        
+        // 启动游戏
+        init();
+    </script>
+</body>
+</html>
